@@ -1,0 +1,25 @@
+{
+  "name": "project_fireflame",
+  "version": "1.0.0",
+  "description": "provides websocket connection to project iron_steel",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Quanicus/Project_Fireflame.git"
+  },
+  "author": "quanicus",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Quanicus/Project_Fireflame/issues"
+  },
+  "homepage": "https://github.com/Quanicus/Project_Fireflame#readme",
+  "dependencies": {
+    "dotenv": "^16.4.5",
+    "jsonwebtoken": "^9.0.2",
+    "pg": "^8.12.0",
+    "uWebSockets.js": "github:uNetworking/uWebSockets.js#v20.43.0"
+  }
+}
