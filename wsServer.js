@@ -13,7 +13,7 @@ const pool = new Pool({
     password: process.env.DB_PASSWORD,
     port: 5432 */
 })
-//const gameEngine = new GameEngine();
+
 const herosOnline = new Map();
 const gameLoop = new GameLoop(herosOnline);
 const decoder = new TextDecoder('utf-8');
@@ -149,5 +149,3 @@ wsServer.listen(PORT, (listenSocket) => {
     }
     
 });
-
-module.exports = wsServer;
