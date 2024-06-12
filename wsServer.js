@@ -144,10 +144,11 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
 });
 
 const PORT = process.env.PORT || 9001;
-wsServer.listen("0.0.0.0", PORT, (listenSocket) => {
-    console.log("are we listening?", listenSocket, PORT);
-    if (listenSocket) {
+wsServer.listen("0.0.0.0", PORT, (token) => {
+    if (token) {
         console.log(`WebSocket server listening on port ${PORT}`);
+    } else {
+        console.log("uWebSocket failed to listen on port", PORT);
     }
     
 });
