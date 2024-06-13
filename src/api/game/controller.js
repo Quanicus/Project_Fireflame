@@ -1,0 +1,3 @@
+const getCharacter = (req, res) => {
+    
+};

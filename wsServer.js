@@ -20,10 +20,11 @@ const decoder = new TextDecoder('utf-8');
 
 const wsServer = require("uWebSockets.js").App().ws("/*", {
     upgrade: async (res, req, context) => {
-        console.log(req);
+        
+        req.forEach(header => console.log(header));
         const cookieHeader = req.getHeader("cookie");
         if (!cookieHeader) {
-            console.error("Cookie header not found");
+            console.error("Cookies not found");
             return res.writeStatus('401').end();
         }
         //get a dictionary of cookies
