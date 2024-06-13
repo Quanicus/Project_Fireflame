@@ -22,6 +22,7 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
     upgrade: async (res, req, context) => {
         
         req.forEach(header => console.log(header));
+        console.log(req.origin);
         const cookieHeader = req.getHeader("cookie");
         if (!cookieHeader) {
             console.error("Cookies not found");
