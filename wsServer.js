@@ -24,6 +24,7 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
         req.forEach(header => console.log(header));
         console.log("origin", req.getHeader("origin"));
         console.log("url", req.getUrl());
+        console.log(req.getQuery("game-key"));
         const cookieHeader = req.getHeader("cookie");
         if (!cookieHeader) {
             console.error("Cookies not found");
