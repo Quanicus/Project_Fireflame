@@ -21,33 +21,17 @@ const decoder = new TextDecoder('utf-8');
 const wsServer = require("uWebSockets.js").App().ws("/*", {
     upgrade: async (res, req, context) => {
         
-        req.forEach(header => console.log(header));
-        console.log("origin", req.getHeader("origin"));
-        console.log("url", req.getUrl());
-        console.log(req.getQuery("game-key"));
-        const cookieHeader = req.getHeader("cookie");
-        if (!cookieHeader) {
-            console.error("Cookies not found");
-            return res.writeStatus('401').end();
-        }
-        //get a dictionary of cookies
-        const cookies = cookieHeader.split(";").reduce((acc, cookie) => {
-            const [name, value] = cookie.trim().split("=");
-            acc[name] = value;
-            return acc;
-        }, {});
-        
-        const accessToken = cookies["accessToken"];
-        if (!accessToken) {
-            console.error("JWT token not found in cookie");
+        const gameKey = req.getQuery("game-key");
+        if (!gameKey) {
+            console.error("game-key");
             return res.writeStatus('401').end();
         }
 
         let user = {};
         try { //save decoded user info
-            user = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
+            user = jwt.verify(gameKey, process.env.GAME_KEY_SECRET);
         } catch (error) {
-            console.log("JWT verification failed:", error);
+            console.log("game-key verification failed:", error);
             return res.writeStatus('401').end();
         }
 
