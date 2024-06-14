@@ -65,6 +65,7 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
         try {
             const result = await pool.query(gameQuery.getHeroById,[user.id]);
             ws.hero = result.rows[0];
+            console.log(ws.hero);
             herosOnline.set(user.id, ws.hero);
         } catch (error) {
             console.error("problem fetching player hero", error);
@@ -84,7 +85,7 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
 
         switch (msgObj.type) {
             case "chat":
-                msgObj.name = user.hero.name;
+                msgObj.name = hero.name;
                 console.log(msgObj);
                 wsServer.publish("chat", JSON.stringify(msgObj));
                 break;
