@@ -65,7 +65,6 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
     },
     open: async (ws) => {
         const user = ws.user;
-        console.log(`User ${user.id} has connected`)
         //GET CHARDATA
         try {
             await pool.query(gameQuery.addHero, [user.id]);
