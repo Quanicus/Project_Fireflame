@@ -61,22 +61,42 @@ const gameEngine = {
             hero.charge_lvl++;
         }
     },
-    processBowRelease: async (hero, clickData) => {
+    processBowRelease: (hero, clickData) => {
         const {x, y, displayWidth: width, displayHeight: height} = clickData;
         const center = { x: width/2, y: height/2 };
         const relativeX = x - center.x; 
         const relativeY = center.y - y;
-        const angle = Math.atan2(relativeY, relativeX) * (180/Math.PI);
+        const angle_degrees = Math.atan2(relativeY, relativeX) * (180/Math.PI);
         
         let aimAngle;
-        if (angle <= 0) {
-            aimAngle = angle + 180;
+        if (angle_degrees <= 0) {
+            aimAngle = angle_degrees + 180;
         } else {
-            aimAngle = angle - 180;
+            aimAngle = angle_degrees - 180;
         }
-        //console.log(aimAngle);
+        const angle_radians = -aimAngle / (180/Math.PI);
+        const direction = hero.direction_aiming;
+        if (direction === "W" || direction === "NW" || direction === "SW") {
+            hero.direction_facing = "left";
+        }
+        
+        let projectile = null;
+        if (hero.charge_lvl === 5) {
+            projectile = {
+                position_x: hero.position_x,
+                position_y: hero.position_y,
+                velocity_x: 10 * Math.cos(angle_radians),
+                velocity_y: 10 * Math.sin(angle_radians),
+                shot_angle: angle_radians,
+                flight_time: 0,
+                owner: hero.player_id
+            };
+        }
         hero.charge_lvl = 0;
         hero.current_action = "idle";
+        hero.direction_aiming = null;
+
+        return projectile;
     },
     processAimBow: async (hero, clickData) => {
         const {x, y, displayWidth: width, displayHeight: height} = clickData;

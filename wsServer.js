@@ -6,35 +6,50 @@ const gameEngine = require("./src/game/GameEngine");
 const {Pool} = require("pg");
 
 const pool = new Pool({
-    connectionString: process.env.DATABASE_URL
-    /* user: process.env.DB_USER,
-    host: "localhost",
+    //connectionString: process.env.DATABASE_URL
+    user: process.env.DB_USER,
+    host: "cm1.local",
     database: process.env.DB_NAME,
     password: process.env.DB_PASSWORD,
-    port: 5432 */
+    port: 5432 
 })
 
-const herosOnline = new Map();
-const gameLoop = new GameLoop(herosOnline);
+const heroesOnline = new Map();
+const projectiles = [];
+const gameLoop = new GameLoop(heroesOnline, projectiles);
 const decoder = new TextDecoder('utf-8');
+
+function parseCookies(cookieHeader) {
+  const cookies = {};
+  if (!cookieHeader) return cookies;
+
+  cookieHeader.split(';').forEach(cookie => {
+    const [name, value] = cookie.split('=').map(part => part.trim());
+    if (name && value) {
+        cookies[name] = value;
+    }
+  });
+  return cookies;
+}
 
 const wsServer = require("uWebSockets.js").App().ws("/*", {
     upgrade: async (res, req, context) => {
-        
-        const gameKey = req.getQuery("game-key");
-        if (!gameKey) {
-            console.error("game-key");
-            return res.writeStatus('401').end();
-        }
-
-        let user = {};
+        const cookieHeader = req.getHeader('cookie');
+        const cookies = cookieHeader ? parseCookies(cookieHeader) : {};
+        const token = cookies.refreshToken;
+    
+        let user = null;
         try { //save decoded user info
-            user = jwt.verify(gameKey, process.env.GAME_KEY_SECRET);
+            user = jwt.verify(token, process.env.REFRESH_TOKEN_SECRET);
+            console.log("verify cookies", user);
         } catch (error) {
             console.log("game-key verification failed:", error);
             return res.writeStatus('401').end();
         }
-
+        if (!user) {
+            console.log("error getting user data");
+            return res.writeStatus('401').end();
+        }
         res.upgrade( // upgrade to websocket
             { // 1st argument sets which properties to pass to ws object, in this case ip address
                 user: user,
@@ -63,10 +78,11 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
         }
         //use user_id to get character data
         try {
+            console.log(gameQuery.getHeroById);
             const result = await pool.query(gameQuery.getHeroById,[user.id]);
             ws.hero = result.rows[0];
             console.log(ws.hero);
-            herosOnline.set(user.id, ws.hero);
+            heroesOnline.set(user.id, ws.hero);
         } catch (error) {
             console.error("problem fetching player hero", error);
         }
@@ -117,7 +133,8 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
                 gameEngine.processAimBow(hero, msgObj.payload);
                 break;
             case "releaseBow":
-                gameEngine.processBowRelease(hero, msgObj.payload);
+                const projectile = gameEngine.processBowRelease(hero, msgObj.payload);
+                if (projectile) projectiles.push(projectile);
                 break;
             default:
                 console.log("default", msgObj.content);
@@ -125,7 +142,7 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
     },
     close: async (ws, code, message) => {
         const user = ws.user;
-        herosOnline.delete(user.id);
+        heroesOnline.delete(user.id);
         gameLoop.removeConnection(ws);//remove connection from the game loop
         await pool.query(gameQuery.setOffline, [user.id]);
         console.log(`User ${user.id} has disconnected`);
