@@ -1,25 +1,54 @@
+const wallMatrix = require("./generateWalls.js");
 const gameEngine = {
 
     processDirection: async (hero, directionVector) => {
-        let moveSpeed = 2;
         const { directionX, directionY } = directionVector;
-        
+        const currentTileX = Math.floor((hero.position_x + 10) / 40);
+        const currentTileY = Math.floor((hero.position_y + 20) / 40);
+        let moveSpeed = hero.move_speed ?? 2;
         if (directionX && directionY) {
             moveSpeed *= 0.707;
         }
-        if (directionX === "a") {
-            hero.position_x -= moveSpeed;
+
+        let newPositionX = 0;
+        if (directionX === "W") {
             hero.direction_facing = "left";
-        } else if (directionX === "d") {
-            hero.position_x += moveSpeed;
+            newPositionX = hero.position_x - moveSpeed;
+            const newTileX = Math.floor((newPositionX + 10) / 40);
+            if ((currentTileX !== newTileX && !wallMatrix[newTileX][currentTileY].includes('E')) ||
+                (currentTileX === newTileX)) {
+                hero.position_x = newPositionX;
+            }
+        } else if (directionX === "E") {
             hero.direction_facing = "right";
+            newPositionX = hero.position_x + moveSpeed;
+            const newTileX = Math.floor(((newPositionX - 10) + 40) / 40);
+
+            if ((currentTileX !== newTileX && !wallMatrix[newTileX][currentTileY].includes('W')) ||
+                (currentTileX === newTileX)) {
+                hero.position_x = newPositionX;
+            }
         }
 
-        if (directionY === "w") {
-            hero.position_y -= moveSpeed;
-        } else if (directionY === "s") {
-            hero.position_y += moveSpeed;
+        let newPositionY = 0;
+        if (directionY === "N") {
+            newPositionY = hero.position_y - moveSpeed;
+            const newTileY = Math.floor((newPositionY + 20) / 40);
+
+            if ((currentTileY !== newTileY && !wallMatrix[currentTileX][newTileY].includes('S')) ||
+                (currentTileY === newTileY)) {
+                hero.position_y = newPositionY;
+            }
+        } else if (directionY === "S") {
+            newPositionY = hero.position_y + moveSpeed;
+            const newTileY = Math.floor((newPositionY + 40) / 40);
+            if ((currentTileY !== newTileY && !wallMatrix[currentTileX][newTileY].includes('N')) ||
+                (currentTileY === newTileY)) {
+                hero.position_y = newPositionY;
+            }
         }
+
+
         if (hero.current_action !== "chargingBow") {
             hero.current_action = "running";
         }

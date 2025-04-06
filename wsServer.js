@@ -77,10 +77,8 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
         }
         //use user_id to get character data
         try {
-            console.log(gameQuery.getHeroById);
             const result = await pool.query(gameQuery.getHeroById,[user.id]);
             ws.hero = result.rows[0];
-            console.log(ws.hero);
             heroesOnline.set(user.id, ws.hero);
         } catch (error) {
             console.error("problem fetching player hero", error);
@@ -101,14 +99,19 @@ const wsServer = require("uWebSockets.js").App().ws("/*", {
         switch (msgObj.type) {
             case "chat":
                 msgObj.name = hero.name;
-                console.log(msgObj);
                 wsServer.publish("chat", JSON.stringify(msgObj));
                 break;
             case "direction":
-                /* if (currentTimestamp - ws.lastMessageTimestamp < 60) {return;}
-                ws.lastMessageTimestamp = currentTimestamp; */
-                //gameEngine.processDirection(ws.user.id, msgObj.payload);
-                gameEngine.processDirection(hero, msgObj.payload);
+                const directionVector = {};
+                const directionX = msgObj.payload.directionX;
+                const directionY = msgObj.payload.directionY;
+                directionVector.directionX = directionX 
+                    ? (directionX === 'a' ? 'W' : 'E') 
+                    : null;
+                directionVector.directionY = directionY 
+                    ? (directionY === 'w' ? 'N' : 'S') 
+                    : null;
+                gameEngine.processDirection(hero, directionVector);
                 break;
             case "idle":
                 if (hero.current_action !== "chargingBow"){
